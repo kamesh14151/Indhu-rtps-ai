@@ -1,433 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Food Chatbot Application</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        :root {
-            --primary: #1d4ed8; /* blue-700 */
-            --primary-foreground: #eff6ff; /* blue-50 */
-            --background: #ffffff;
-            --foreground: #3d3a35;
-            --card: #ffffff;
-            --card-foreground: #3d3a35;
-            --muted: #f3f4f6;
-            --muted-foreground: #6b7280;
-            --accent: #f3f4f6;
-            --accent-foreground: #111827;
-            --border: #e5e7eb;
-            --input: #e5e7eb;
-            --ring: #3b82f6;
-            --radius: 0.65rem;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food Dashboard & Chatbot</title>
+  <style>
+    /* --- General Dashboard Styles --- */
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f3f4f6; margin: 0; color: #333; }
+    header { background: #1d4ed8; color: white; padding: 25px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    header h1 { margin: 0; font-size: 28px; }
+    header p { margin: 5px 0 0; color: #eff6ff; }
+    
+    .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
+    .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+    
+    /* Food Cards */
+    .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: transform 0.2s; }
+    .card:hover { transform: translateY(-5px); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+    .card img { width: 100%; height: 160px; object-fit: cover; }
+    .card-body { padding: 15px; }
+    .card-title { font-size: 18px; font-weight: bold; margin: 0 0 5px; }
+    .card-price { color: #1d4ed8; font-size: 18px; font-weight: bold; margin-bottom: 15px; }
+    .btn { display: block; width: 100%; padding: 10px; background: #1d4ed8; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+    .btn:hover { background: #1e40af; }
 
-        body {
-            background-color: var(--background);
-            color: var(--foreground);
-            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-        }
-
-        .text-gradient {
-            background: linear-gradient(to right, #1d4ed8, #3b82f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .chat-bubble-user {
-            margin-left: auto;
-            background-color: #f3f4f6; /* Using muted for consistency with original accent if needed, but original used accent */
-            color: #111827;
-            border-radius: 1rem;
-            border-bottom-right-radius: 0;
-            padding: 0.5rem 1rem;
-            max-width: 80%;
-            animation: slideInUp 0.3s ease-out;
-        }
-
-        .chat-bubble-bot {
-            margin-right: auto;
-            background-color: #f3f4f6;
-            color: #3d3a35;
-            border-radius: 1rem;
-            border-bottom-left-radius: 0;
-            padding: 0.5rem 1rem;
-            max-width: 80%;
-            animation: slideInDown 0.3s ease-out;
-        }
-
-        @keyframes slideInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes slideInDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .order-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.5rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .price-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
-        }
-
-        .price-total {
-            display: flex;
-            justify-content: space-between;
-            font-weight: bold;
-            font-size: 1.125rem;
-            margin-top: 0.75rem;
-            border-top: 1px solid var(--border);
-            padding-top: 0.75rem;
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #d1d5db;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #9ca3af;
-        }
-    </style>
+    /* --- Floating Chatbot Styles --- */
+    #fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; border-radius: 50%; background: #1d4ed8; color: white; border: none; font-size: 24px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; transition: 0.2s; }
+    #fab:hover { transform: scale(1.05); }
+    
+    #chat-widget { position: fixed; bottom: 90px; right: 20px; width: 320px; height: 450px; background: #fff; border-radius: 12px; display: none; flex-direction: column; box-shadow: 0 5px 25px rgba(0,0,0,0.2); overflow: hidden; z-index: 1000; }
+    #chat-header { background: #1d4ed8; color: #fff; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+    #close-btn { background: none; border: none; color: white; font-size: 18px; cursor: pointer; }
+    
+    #messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .msg { padding: 10px 14px; border-radius: 18px; max-width: 80%; font-size: 14px; word-wrap: break-word; line-height: 1.4; }
+    .bot { background: #f3f4f6; color: #333; align-self: flex-start; border-bottom-left-radius: 4px; }
+    .user { background: #1d4ed8; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+    
+    #input-area { display: flex; padding: 10px; border-top: 1px solid #eee; background: white; }
+    #userInput { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 20px; outline: none; }
+    #send-btn { background: #1d4ed8; color: white; border: none; padding: 0 15px; margin-left: 8px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+  </style>
 </head>
-<body class="min-h-screen">
-    <div class="max-w-7xl mx-auto px-4 py-6">
-        <!-- Header -->
-        <div class="mb-8">
-            <h1 class="text-4xl font-bold text-gradient mb-2">
-                🍽️ Food Ordering Chatbot
-            </h1>
-            <p class="text-gray-500" id="welcome-message">
-                Welcome! Browse our menu and order delicious food.
-            </p>
-        </div>
+<body>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Main Content - Menu & Chat -->
-            <div class="lg:col-span-2 space-y-6">
-                <!-- Menu Section -->
-                <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-                    <h2 class="text-2xl font-bold mb-4">Our Menu</h2>
+  <header>
+    <h1>🍽️ Campus Bite Dashboard</h1>
+    <p>Browse the menu below or chat with our bot to order!</p>
+  </header>
 
-                    <!-- Category Filter -->
-                    <div class="flex gap-2 mb-6 overflow-x-auto pb-2" id="category-filters">
-                        <!-- Categories will be injected here -->
-                    </div>
+  <div class="container">
+    <h2 style="margin-top:0;">Popular Menu Items</h2>
+    <div class="menu-grid" id="menu-container">
+      </div>
+  </div>
 
-                    <!-- Menu Items Grid -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="menu-grid">
-                        <!-- Menu items will be injected here -->
-                    </div>
-                </div>
-
-                <!-- Chat Section -->
-                <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6 h-[500px] flex flex-col">
-                    <h2 class="text-2xl font-bold mb-4">Chat Assistant</h2>
-
-                    <!-- Messages Container -->
-                    <div class="flex-1 overflow-y-auto mb-4 space-y-3 pr-2" id="chat-messages">
-                        <!-- Messages will be injected here -->
-                    </div>
-
-                    <!-- Input Area -->
-                    <div class="flex gap-2">
-                        <input type="text" id="chat-input" placeholder="Ask me anything..." 
-                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <button id="send-btn" class="bg-blue-700 text-white p-2 rounded-lg hover:bg-blue-800 transition-colors">
-                            <i data-lucide="send" class="w-5 h-5"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Sidebar - Order Summary -->
-            <div class="lg:col-span-1">
-                <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6 space-y-4 sticky top-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-2xl font-bold flex items-center gap-2">
-                            <i data-lucide="shopping-cart" class="w-6 h-6"></i>
-                            Cart
-                        </h2>
-                        <span id="cart-count" class="bg-blue-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
-                            0
-                        </span>
-                    </div>
-
-                    <!-- Cart Items -->
-                    <div class="space-y-3 mb-4 max-h-64 overflow-y-auto pr-2" id="cart-items">
-                        <p class="text-gray-500 text-center py-4">Your cart is empty</p>
-                    </div>
-
-                    <!-- Discount Code -->
-                    <div class="mb-4 space-y-2">
-                        <label class="text-sm font-medium">Discount Code</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="discount-input" placeholder="Enter code" 
-                                class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase">
-                        </div>
-                    </div>
-
-                    <!-- Price Summary -->
-                    <div id="price-summary" class="hidden">
-                        <div class="price-row">
-                            <span>Subtotal:</span>
-                            <span id="subtotal-amount">$0.00</span>
-                        </div>
-                        <div id="discount-row" class="price-row text-blue-700 hidden">
-                            <span>Discount:</span>
-                            <span id="discount-amount">-$0.00</span>
-                        </div>
-                        <div class="price-total">
-                            <span>Total:</span>
-                            <span id="total-amount">$0.00</span>
-                        </div>
-                    </div>
-
-                    <!-- Checkout Button -->
-                    <button id="checkout-btn" disabled 
-                        class="w-full bg-blue-700 text-white py-3 rounded-lg hover:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4 font-bold">
-                        Checkout
-                    </button>
-                </div>
-            </div>
-        </div>
+  <button id="fab" onclick="toggleChat()">💬</button>
+  
+  <div id="chat-widget">
+    <div id="chat-header">
+      <span>🤖 FoodBot Assistant</span>
+      <button id="close-btn" onclick="toggleChat()">✖</button>
     </div>
+    <div id="messages">
+      <div class="msg bot">Hi there! 👋 You can add items from the dashboard, or just type what you want here (e.g., <b>pizza</b>). Type <b>cart</b> or <b>checkout</b> anytime.</div>
+    </div>
+    <div id="input-area">
+      <input type="text" id="userInput" placeholder="Ask me anything..." onkeypress="if(event.key === 'Enter') sendMessage()">
+      <button id="send-btn" onclick="sendMessage()">Send</button>
+    </div>
+  </div>
 
-    <script>
-        // Mock Data
-        const menuItems = [
-            { id: 1, name: "Classic Burger", description: "Juicy beef patty with lettuce, tomato, and cheese.", price: 12.99, category: "Mains", imageUrl: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&auto=format&fit=crop&q=60" },
-            { id: 2, name: "Margherita Pizza", description: "Fresh mozzarella, basil, and tomato sauce.", price: 14.99, category: "Mains", imageUrl: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=500&auto=format&fit=crop&q=60" },
-            { id: 3, name: "Caesar Salad", description: "Crisp romaine, croutons, and parmesan with Caesar dressing.", price: 9.99, category: "Appetizers", imageUrl: "https://images.unsplash.com/photo-1550304943-4f24f54ddde9?w=500&auto=format&fit=crop&q=60" },
-            { id: 4, name: "Chocolate Lava Cake", description: "Warm chocolate cake with a gooey center.", price: 7.99, category: "Desserts", imageUrl: "https://images.unsplash.com/photo-1624353335558-98e73160ef91?w=500&auto=format&fit=crop&q=60" },
-            { id: 5, name: "Iced Latte", description: "Chilled espresso with creamy milk.", price: 4.50, category: "Beverages", imageUrl: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=500&auto=format&fit=crop&q=60" },
-            { id: 6, name: "Garlic Bread", description: "Toasted baguette with garlic butter and herbs.", price: 5.99, category: "Appetizers", imageUrl: "https://images.unsplash.com/photo-1573140247632-f8fd74997d5c?w=500&auto=format&fit=crop&q=60" }
-        ];
+  <script>
+    // --- Data & State ---
+    const menuItems = [
+      { id: 'burger', name: "Classic Burger", price: 12.99, img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=60" },
+      { id: 'pizza', name: "Margherita Pizza", price: 14.99, img: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=400&q=60" },
+      { id: 'salad', name: "Caesar Salad", price: 9.99, img: "https://images.unsplash.com/photo-1550304943-4f24f54ddde9?w=400&q=60" },
+      { id: 'coffee', name: "Iced Latte", price: 4.50, img: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=400&q=60" }
+    ];
+    let cart = []; // Shared cart for both Dashboard and Bot
+    
+    const msgsContainer = document.getElementById('messages');
+    const inputField = document.getElementById('userInput');
 
-        const categories = ["All", "Appetizers", "Mains", "Desserts", "Beverages"];
+    // --- Dashboard Functions ---
+    function renderMenu() {
+      const container = document.getElementById('menu-container');
+      container.innerHTML = menuItems.map(item => `
+        <div class="card">
+          <img src="${item.img}" alt="${item.name}">
+          <div class="card-body">
+            <h3 class="card-title">${item.name}</h3>
+            <div class="card-price">$${item.price.toFixed(2)}</div>
+            <button class="btn" onclick="addToCart('${item.id}', '${item.name}', ${item.price})">Add to Cart</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Connects Dashboard clicks to the Chatbot
+    function addToCart(id, name, price) {
+      cart.push({ id, name, price });
+      document.getElementById('chat-widget').style.display = 'flex'; // Auto-open chat
+      addMsg(`✅ Added <b>${name}</b> to your cart from the dashboard! Type <b>checkout</b> when ready.`, 'bot');
+    }
+
+    // --- Chatbot Functions ---
+    function toggleChat() {
+      const widget = document.getElementById('chat-widget');
+      widget.style.display = widget.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function addMsg(text, sender) {
+      msgsContainer.innerHTML += `<div class="msg ${sender}">${text}</div>`;
+      msgsContainer.scrollTop = msgsContainer.scrollHeight; // Auto-scroll to bottom
+    }
+
+    function sendMessage() {
+      const rawText = inputField.value.trim();
+      const text = rawText.toLowerCase();
+      if (!text) return;
+      
+      addMsg(rawText, 'user');
+      inputField.value = '';
+
+      // Simulate Bot processing time
+      setTimeout(() => {
+        // Check if user typed a food item name
+        const foundItem = menuItems.find(item => text.includes(item.id));
         
-        // State
-        let cart = [];
-        let selectedCategory = "All";
-        let messages = [
-            { id: "greeting", type: "bot", content: "Welcome! 👋 I'm your food ordering assistant. Browse our delicious menu, add items to your cart, and I'll help you complete your order. What would you like to eat today?" }
-        ];
-        let discountCode = "";
-        let discountAmount = 0;
-
-        // DOM Elements
-        const menuGrid = document.getElementById('menu-grid');
-        const categoryFilters = document.getElementById('category-filters');
-        const chatMessages = document.getElementById('chat-messages');
-        const chatInput = document.getElementById('chat-input');
-        const sendBtn = document.getElementById('send-btn');
-        const cartItems = document.getElementById('cart-items');
-        const cartCount = document.getElementById('cart-count');
-        const subtotalAmount = document.getElementById('subtotal-amount');
-        const discountRow = document.getElementById('discount-row');
-        const discountAmountEl = document.getElementById('discount-amount');
-        const totalAmount = document.getElementById('total-amount');
-        const priceSummary = document.getElementById('price-summary');
-        const checkoutBtn = document.getElementById('checkout-btn');
-        const discountInput = document.getElementById('discount-input');
-
-        // Initialize
-        function init() {
-            renderCategories();
-            renderMenu();
-            renderChat();
-            lucide.createIcons();
+        if (text === 'menu') {
+          let menuText = menuItems.map(i => `${i.name}: $${i.price.toFixed(2)}`).join('<br>');
+          addMsg(`📜 <b>Our Menu:</b><br>${menuText}`, 'bot');
+        } 
+        else if (foundItem) {
+          cart.push(foundItem);
+          addMsg(`✅ Added <b>${foundItem.name}</b> to your cart!`, 'bot');
+        } 
+        else if (text.includes('cart')) {
+          if (cart.length === 0) return addMsg("Your cart is empty!", 'bot');
+          const total = cart.reduce((sum, item) => sum + item.price, 0).toFixed(2);
+          const itemsList = cart.map(i => i.name).join(', ');
+          addMsg(`🛒 You have ${cart.length} items (${itemsList}). Total: <b>$${total}</b>`, 'bot');
+        } 
+        else if (text.includes('checkout') || text.includes('pay')) {
+          if (cart.length === 0) return addMsg("Your cart is empty! Add something first.", 'bot');
+          const total = cart.reduce((sum, item) => sum + item.price, 0).toFixed(2);
+          addMsg(`🎉 Order placed successfully! Total paid: <b>$${total}</b>. The kitchen is preparing your food now!`, 'bot');
+          cart = []; // Empty the cart after checkout
+        } 
+        else {
+          addMsg("I didn't quite catch that. Try asking for the <b>menu</b>, viewing your <b>cart</b>, or clicking a button on the dashboard.", 'bot');
         }
+      }, 600);
+    }
 
-        function renderCategories() {
-            categoryFilters.innerHTML = categories.map(cat => `
-                <button onclick="setCategory('${cat}')" 
-                    class="px-4 py-1 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${selectedCategory === cat ? 'bg-blue-700 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}">
-                    ${cat}
-                </button>
-            `).join('');
-        }
-
-        function setCategory(cat) {
-            selectedCategory = cat;
-            renderCategories();
-            renderMenu();
-        }
-
-        function renderMenu() {
-            const filtered = selectedCategory === "All" 
-                ? menuItems 
-                : menuItems.filter(item => item.category === selectedCategory);
-
-            menuGrid.innerHTML = filtered.map(item => `
-                <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden transition-transform duration-300 hover:scale-[1.02]">
-                    <img src="${item.imageUrl}" alt="${item.name}" class="w-full h-40 object-cover">
-                    <div class="p-4">
-                        <h3 class="font-bold text-lg mb-1">${item.name}</h3>
-                        <p class="text-xs text-gray-500 mb-3 h-8 overflow-hidden">${item.description}</p>
-                        <div class="flex justify-between items-center">
-                            <span class="text-lg font-bold text-blue-700">$${item.price.toFixed(2)}</span>
-                            <button onclick="addToCart(${item.id})" class="bg-gray-100 hover:bg-gray-200 text-gray-800 p-2 rounded-lg transition-colors">
-                                <i data-lucide="plus" class="w-4 h-4"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-            lucide.createIcons();
-        }
-
-        function addToCart(id) {
-            const item = menuItems.find(i => i.id === id);
-            const existing = cart.find(i => i.id === id);
-            
-            if (existing) {
-                existing.quantity += 1;
-            } else {
-                cart.push({ ...item, quantity: 1 });
-            }
-            
-            updateCart();
-        }
-
-        function updateQuantity(id, delta) {
-            const item = cart.find(i => i.id === id);
-            if (item) {
-                item.quantity += delta;
-                if (item.quantity <= 0) {
-                    cart = cart.filter(i => i.id !== id);
-                }
-            }
-            updateCart();
-        }
-
-        function updateCart() {
-            cartCount.textContent = cart.reduce((sum, i) => sum + i.quantity, 0);
-            
-            if (cart.length === 0) {
-                cartItems.innerHTML = '<p class="text-gray-500 text-center py-4">Your cart is empty</p>';
-                priceSummary.classList.add('hidden');
-                checkoutBtn.disabled = true;
-            } else {
-                cartItems.innerHTML = cart.map(item => `
-                    <div class="order-item">
-                        <div class="flex-1">
-                            <p class="font-medium text-sm">${item.name}</p>
-                            <p class="text-xs text-gray-500">$${item.price.toFixed(2)} each</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="updateQuantity(${item.id}, -1)" class="w-6 h-6 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-50">
-                                <i data-lucide="minus" class="w-3 h-3"></i>
-                            </button>
-                            <span class="w-4 text-center text-sm font-medium">${item.quantity}</span>
-                            <button onclick="updateQuantity(${item.id}, 1)" class="w-6 h-6 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-50">
-                                <i data-lucide="plus" class="w-3 h-3"></i>
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-                
-                const subtotal = cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
-                subtotalAmount.textContent = `$${subtotal.toFixed(2)}`;
-                
-                // Simple discount logic
-                if (discountCode === "SAVE10") {
-                    discountAmount = subtotal * 0.1;
-                    discountRow.classList.remove('hidden');
-                    discountAmountEl.textContent = `-$${discountAmount.toFixed(2)}`;
-                } else {
-                    discountAmount = 0;
-                    discountRow.classList.add('hidden');
-                }
-                
-                totalAmount.textContent = `$${(subtotal - discountAmount).toFixed(2)}`;
-                priceSummary.classList.remove('hidden');
-                checkoutBtn.disabled = false;
-            }
-            lucide.createIcons();
-        }
-
-        function renderChat() {
-            chatMessages.innerHTML = messages.map(msg => `
-                <div class="flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}">
-                    <div class="${msg.type === 'user' ? 'chat-bubble-user' : 'chat-bubble-bot'}">
-                        <p class="text-sm">${msg.content}</p>
-                    </div>
-                </div>
-            `).join('');
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function handleSend() {
-            const content = chatInput.value.trim();
-            if (!content) return;
-
-            messages.push({ id: Date.now().toString(), type: 'user', content });
-            chatInput.value = '';
-            renderChat();
-
-            // Mock bot response
-            setTimeout(() => {
-                let botResponse = "I'm here to help! You can browse the menu or ask about specific items.";
-                
-                if (content.toLowerCase().includes('hello') || content.toLowerCase().includes('hi')) {
-                    botResponse = "Hello! What can I get for you today?";
-                } else if (content.toLowerCase().includes('menu')) {
-                    botResponse = "Our menu includes Appetizers, Mains, Desserts, and Beverages. Check them out on the left!";
-                } else if (content.toLowerCase().includes('order') || content.toLowerCase().includes('checkout')) {
-                    botResponse = "Once you've added items to your cart, click the Checkout button to place your order.";
-                }
-
-                messages.push({ id: (Date.now() + 1).toString(), type: 'bot', content: botResponse });
-                renderChat();
-            }, 600);
-        }
-
-        sendBtn.addEventListener('click', handleSend);
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleSend();
-        });
-
-        discountInput.addEventListener('input', (e) => {
-            discountCode = e.target.value.toUpperCase();
-            updateCart();
-        });
-
-        checkoutBtn.addEventListener('click', () => {
-            const total = totalAmount.textContent;
-            messages.push({ 
-                id: Date.now().toString(), 
-                type: 'bot', 
-                content: `Great! Your order has been confirmed. Order total: ${total}. We'll prepare your food right away!` 
-            });
-            renderChat();
-            cart = [];
-            discountCode = "";
-            discountInput.value = "";
-            updateCart();
-        });
-
-        init();
-    </script>
+    // Run when page loads
+    renderMenu();
+  </script>
 </body>
 </html>
